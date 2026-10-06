@@ -1,0 +1,284 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Weather App</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Times New Roman', Times, serif, sans-serif;
+            background: linear-gradient(135deg, rgb(3, 171, 237), rgb(6, 149, 49));
+            min-height: 50vh;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            padding: 250px;
+        }
+
+        .weather-container {
+            background: rgb(217, 210, 3);
+            width: 90%;
+            max-width: 700px;
+
+            padding: 30px;
+            border-radius: 20px;
+
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 10px;
+        }
+
+        #location {
+            color: #e10808;
+            margin-bottom: 25px;
+        }
+
+        .weather-card {
+            background: #d61284;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+
+        .temperature {
+            font-size: 60px;
+            font-weight: Italic;
+            color: #16ff83;
+        }
+
+        #time {
+            margin-top: 10px;
+            color: #000000;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+        }
+
+        .forecast {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+
+        .forecast-card {
+            min-width: 100px;
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 12px;
+        }
+
+        .forecast-card .hour {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .forecast-card .temp {
+            font-size: 22px;
+            font-weight: bold;
+            color: #1677ff;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="weather-container">
+
+        <h1>Weather App 🌤️</h1>
+
+        <p id="location">Loading location...</p>
+
+        <div class="weather-card">
+
+            <div class="temperature">
+                <span id="currentTemp">--</span>°C
+            </div>
+
+            <p id="time">Loading time...</p>
+
+        </div>
+
+        <h2>Hourly Temperature</h2>
+
+        <div id="forecast" class="forecast">
+            <!-- Forecast cards will be created by JavaScript -->
+        </div>
+
+    </div>
+
+
+    <script>
+
+        // Open-Meteo API
+        const apiURL =
+            "https://api.open-meteo.com/v1/forecast?latitude=23.2547&longitude=77.4029&hourly=temperature_2m&past_days=1";
+
+
+        // Function to get weather
+        async function getWeather() {
+
+            try {
+
+                // Send request to the API
+                const response = await fetch(apiURL);
+
+                // Convert API response into JavaScript object
+                const data = await response.json();
+
+                console.log(data);
+
+
+                // -----------------------------
+                // LOCATION
+                // -----------------------------
+
+                document.getElementById("location").textContent =
+                    `Latitude: ${data.latitude.toFixed(2)}, 
+                     Longitude: ${data.longitude.toFixed(2)}`;
+
+
+                // -----------------------------
+                // HOURLY DATA
+                // -----------------------------
+
+                const times = data.hourly.time;
+                const temperatures = data.hourly.temperature_2m;
+
+
+                // -----------------------------
+                // FIND CURRENT HOUR
+                // -----------------------------
+
+                const now = new Date();
+
+                let currentIndex = 0;
+
+                let smallestDifference = Infinity;
+
+
+                for (let i = 0; i < times.length; i++) {
+
+                    const apiTime = new Date(times[i]);
+
+                    const difference =
+                        Math.abs(now - apiTime);
+
+                    if (difference < smallestDifference) {
+
+                        smallestDifference = difference;
+
+                        currentIndex = i;
+                    }
+                }
+
+
+                // -----------------------------
+                // CURRENT TEMPERATURE
+                // -----------------------------
+
+                const currentTemperature =
+                    temperatures[currentIndex];
+
+                const currentTime =
+                    times[currentIndex];
+
+
+                document.getElementById("currentTemp").textContent =
+                    currentTemperature;
+
+
+                document.getElementById("time").textContent =
+                    `Time: ${currentTime}`;
+
+
+                // -----------------------------
+                // HOURLY FORECAST
+                // -----------------------------
+
+                const forecast =
+                    document.getElementById("forecast");
+
+
+                forecast.innerHTML = "";
+
+
+                // Show current hour + next 23 hours
+                for (
+                    let i = currentIndex;
+                    i < currentIndex + 24 && i < times.length;
+                    i++
+                ) {
+
+                    const time = times[i];
+
+                    const temperature =
+                        temperatures[i];
+
+
+                    // Extract hour
+                    const hour =
+                        time.split("T")[1];
+
+
+                    // Create card
+                    const card =
+                        document.createElement("div");
+
+                    card.classList.add("forecast-card");
+
+
+                    card.innerHTML = `
+                        <div class="hour">
+                            ${hour}
+                        </div>
+
+                        <div class="temp">
+                            ${temperature}°C
+                        </div>
+                    `;
+
+
+                    forecast.appendChild(card);
+                }
+
+            }
+
+            catch (error) {
+
+                console.error(error);
+
+                document.getElementById("location").textContent =
+                    "Unable to load weather data.";
+
+            }
+        }
+
+
+        // Start the application
+        getWeather();
+
+    </script>
+
+</body>
+
+</html>
+```
