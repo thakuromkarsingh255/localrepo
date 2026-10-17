@@ -4,7 +4,7 @@ class MyWork
     {
         System.out.println("Some work");
         System.out.println("Some NEW work");
-        System.out.println("I AM FEATURE2 BRANCH");
+        System.out.println("I AM FEATURE2 BRANCH");  
     }
-
-}
+ }   
+    
